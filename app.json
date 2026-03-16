@@ -1,30 +1,55 @@
 {
   "expo": {
-    "name": "01-carlights-ar",
-    "slug": "01-carlights-ar",
+    "name": "أضواء السيارة",
+    "slug": "carlights-ar",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0d1117"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aizidong.carlights.ar",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "ar",
+        "NSUserTrackingUsageDescription": "نستخدم هذا الإذن لعرض إعلانات مناسبة لاهتماماتك. We use this permission to show ads relevant to your interests.",
+        "GADApplicationIdentifier": "ca-app-pub-4374876928430270~3322544432"
+      }
     },
     "android": {
+      "package": "com.aizidong.carlights.ar",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0d1117",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "supportsRTL": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-4374876928430270~7801714069",
+          "iosAppId": "ca-app-pub-4374876928430270~3322544432",
+          "skAdNetworkItems": [],
+          "userTrackingUsageDescription": "نستخدم هذا الإذن لعرض إعلانات مناسبة لاهتماماتك. We use this permission to show ads relevant to your interests."
+        }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "نستخدم هذا الإذن لعرض إعلانات مناسبة لاهتماماتك. We use this permission to show ads relevant to your interests."
+        }
+      ]
+    ]
   }
 }
