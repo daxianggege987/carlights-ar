@@ -15,26 +15,7 @@
       }
     },
     "production": {
-      "autoIncrement": true,
-      "ios": {
-        "buildNumber": "1"
-      },
-      "android": {
-        "versionCode": 1
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": "",
-        "track": "production"
-      }
+      "autoIncrement": true
     }
   }
 }
