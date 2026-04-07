@@ -8,12 +8,18 @@ class AdManager {
   private appStartTime = Date.now();
   private isAdLoaded = false;
   private isAdShowing = false;
+  private started = false;
 
-  constructor() {
+  /** Call only after App Tracking Transparency (iOS) and mobileAds.initialize(). */
+  start() {
+    if (this.started) return;
+    this.started = true;
+    this.appStartTime = Date.now();
     this.loadInterstitial();
   }
 
   private loadInterstitial() {
+    if (!this.started) return;
     try {
       this.interstitial = InterstitialAd.createForAdRequest(AD_UNIT_IDS.interstitial);
       this.isAdLoaded = false;
@@ -40,6 +46,7 @@ class AdManager {
   }
 
   canShowInterstitial(isRedSeverity: boolean): boolean {
+    if (!this.started) return false;
     if (isRedSeverity) return false;
 
     const now = Date.now();

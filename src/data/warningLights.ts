@@ -1,4 +1,6 @@
 import { WarningLight } from '../types';
+import { moreWarningLights } from './warningLightsMore';
+import { warningLightsBatch3 } from './warningLightsBatch3';
 
 export const warningLights: WarningLight[] = [
   // ═══════════════════════════════════════
@@ -818,4 +820,6 @@ export const warningLights: WarningLight[] = [
     canDrive: true,
     commonCausesAr: ['تفعيل يدوي للنظام'],
   },
+  ...moreWarningLights,
+  ...warningLightsBatch3,
 ];

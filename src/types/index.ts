@@ -34,6 +34,13 @@ export interface WarningLight {
 
 export type Screen =
   | { name: 'home' }
-  | { name: 'browse'; category?: Category }
+  | {
+      name: 'browse';
+      category?: Category;
+      /** Filter by dashboard light severity (optional). */
+      severity?: Severity | 'all';
+    }
+  | { name: 'checklist' }
+  | { name: 'quiz' }
   | { name: 'search' }
   | { name: 'detail'; lightId: string };

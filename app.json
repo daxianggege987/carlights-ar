@@ -2,7 +2,7 @@
   "expo": {
     "name": "أضواء السيارة",
     "slug": "carlights-ar",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -20,7 +20,7 @@
         "GADApplicationIdentifier": "ca-app-pub-4374876928430270~3322544432",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "2"
+      "buildNumber": "8"
     },
     "android": {
       "package": "com.aizidong.carlights.ar",
@@ -35,7 +35,7 @@
       "permissions": [
         "com.google.android.gms.permission.AD_ID"
       ],
-      "versionCode": 2
+      "versionCode": 5
     },
     "web": {
       "favicon": "./assets/favicon.png"

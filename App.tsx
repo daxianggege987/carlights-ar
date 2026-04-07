@@ -1,36 +1,20 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { I18nManager, StatusBar, Platform } from 'react-native';
-import mobileAds from 'react-native-google-mobile-ads';
+import React, { useState, useCallback } from 'react';
+import { I18nManager, StatusBar } from 'react-native';
 import { Screen } from './src/types';
 import HomeScreen from './src/screens/HomeScreen';
 import BrowseScreen from './src/screens/BrowseScreen';
 import DetailScreen from './src/screens/DetailScreen';
+import ChecklistScreen from './src/screens/ChecklistScreen';
+import QuizScreen from './src/screens/QuizScreen';
+import { AdsProvider } from './src/ads/AdsContext';
 
 if (!I18nManager.isRTL) {
   I18nManager.allowRTL(true);
   I18nManager.forceRTL(true);
 }
 
-async function initAds() {
-  try {
-    if (Platform.OS === 'ios') {
-      const { requestTrackingPermissionsAsync } = require('expo-tracking-transparency');
-      await requestTrackingPermissionsAsync();
-    }
-    await mobileAds().initialize();
-  } catch {
-    // Ads not available (e.g. web or simulator without ads)
-  }
-}
-
 export default function App() {
   const [screenStack, setScreenStack] = useState<Screen[]>([{ name: 'home' }]);
-
-  useEffect(() => {
-    if (Platform.OS !== 'web') {
-      initAds();
-    }
-  }, []);
 
   const currentScreen = screenStack[screenStack.length - 1];
 
@@ -50,10 +34,15 @@ export default function App() {
         return (
           <BrowseScreen
             initialCategory={currentScreen.category}
+            initialSeverity={currentScreen.severity}
             navigate={navigate}
             goBack={goBack}
           />
         );
+      case 'checklist':
+        return <ChecklistScreen goBack={goBack} />;
+      case 'quiz':
+        return <QuizScreen goBack={goBack} />;
       case 'detail':
         return (
           <DetailScreen
@@ -68,9 +57,9 @@ export default function App() {
   };
 
   return (
-    <>
+    <AdsProvider>
       <StatusBar barStyle="light-content" backgroundColor="#0d1117" />
       {renderScreen()}
-    </>
+    </AdsProvider>
   );
 }

@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Large local side projects (do not push)
+screenshots-gen/
+foamed-cement-app/
+app-store-screenshots/

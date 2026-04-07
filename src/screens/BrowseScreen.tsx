@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import { Category, Screen } from '../types';
+import { Category, Screen, Severity } from '../types';
 import { colors, spacing, fontSize, radius } from '../theme';
 import { categories } from '../data/categories';
 import { warningLights } from '../data/warningLights';
@@ -15,22 +15,48 @@ import LightCard from '../components/LightCard';
 import SearchBar from '../components/SearchBar';
 import BannerAdView from '../ads/BannerAdView';
 
+type SeverityFilter = Severity | 'all';
+
 interface Props {
   initialCategory?: Category;
+  initialSeverity?: SeverityFilter;
   navigate: (screen: Screen) => void;
   goBack: () => void;
 }
 
-export default function BrowseScreen({ initialCategory, navigate, goBack }: Props) {
+export default function BrowseScreen({
+  initialCategory,
+  initialSeverity,
+  navigate,
+  goBack,
+}: Props) {
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>(
     initialCategory || 'all'
   );
+  const [severityFilter, setSeverityFilter] = useState<SeverityFilter>(
+    initialSeverity ?? 'all'
+  );
   const [search, setSearch] = useState('');
+
+  const poolForSeverity = useMemo(() => {
+    if (activeCategory === 'all') return warningLights;
+    return warningLights.filter((l) => l.category === activeCategory);
+  }, [activeCategory]);
+
+  const severityCounts = useMemo(() => {
+    const red = poolForSeverity.filter((l) => l.severity === 'red').length;
+    const yellow = poolForSeverity.filter((l) => l.severity === 'yellow').length;
+    const green = poolForSeverity.filter((l) => l.severity === 'green').length;
+    return { all: poolForSeverity.length, red, yellow, green };
+  }, [poolForSeverity]);
 
   const filteredLights = useMemo(() => {
     let result = warningLights;
     if (activeCategory !== 'all') {
       result = result.filter((l) => l.category === activeCategory);
+    }
+    if (severityFilter !== 'all') {
+      result = result.filter((l) => l.severity === severityFilter);
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -42,7 +68,7 @@ export default function BrowseScreen({ initialCategory, navigate, goBack }: Prop
       );
     }
     return result;
-  }, [activeCategory, search]);
+  }, [activeCategory, severityFilter, search]);
 
   const activeCatInfo = categories.find((c) => c.id === activeCategory);
 
@@ -117,6 +143,56 @@ export default function BrowseScreen({ initialCategory, navigate, goBack }: Prop
         })}
       </ScrollView>
 
+      {/* Severity chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.severityChipsContainer}
+        style={styles.severityChipsScroll}
+      >
+        {(
+          [
+            { key: 'all' as const, label: 'الكل', count: severityCounts.all },
+            { key: 'red' as const, label: '🔴 خطر', count: severityCounts.red },
+            {
+              key: 'yellow' as const,
+              label: '🟡 تحذير',
+              count: severityCounts.yellow,
+            },
+            {
+              key: 'green' as const,
+              label: '🟢 معلومات',
+              count: severityCounts.green,
+            },
+          ] as const
+        ).map(({ key, label, count }) => (
+          <TouchableOpacity
+            key={key}
+            style={[
+              styles.severityChip,
+              severityFilter === key && styles.severityChipActive,
+              key === 'red' && severityFilter === key && styles.severityChipRed,
+              key === 'yellow' &&
+                severityFilter === key &&
+                styles.severityChipYellow,
+              key === 'green' &&
+                severityFilter === key &&
+                styles.severityChipGreen,
+            ]}
+            onPress={() => setSeverityFilter(key)}
+          >
+            <Text
+              style={[
+                styles.severityChipText,
+                severityFilter === key && styles.severityChipTextActive,
+              ]}
+            >
+              {label} ({count})
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       {/* Results */}
       <ScrollView
         style={styles.listContainer}
@@ -176,7 +252,46 @@ const styles = StyleSheet.create({
   },
   chipsScroll: {
     maxHeight: 48,
+    marginBottom: spacing.sm,
+  },
+  severityChipsScroll: {
+    maxHeight: 44,
     marginBottom: spacing.md,
+  },
+  severityChipsContainer: {
+    paddingHorizontal: spacing.xl,
+    gap: spacing.sm,
+    flexDirection: 'row-reverse',
+  },
+  severityChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgCard,
+  },
+  severityChipActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryDark + '30',
+  },
+  severityChipRed: {
+    borderColor: colors.severityRed,
+  },
+  severityChipYellow: {
+    borderColor: colors.severityYellow,
+  },
+  severityChipGreen: {
+    borderColor: colors.severityGreen,
+  },
+  severityChipText: {
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  severityChipTextActive: {
+    color: colors.textPrimary,
+    fontWeight: '700',
   },
   chipsContainer: {
     paddingHorizontal: spacing.xl,

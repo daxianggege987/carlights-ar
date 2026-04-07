@@ -3,11 +3,13 @@ import { View, StyleSheet, Platform } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { AD_UNIT_IDS } from './config';
 import { colors } from '../theme';
+import { useAdsSafe } from './AdsContext';
 
 export default function BannerAdView() {
   const [hasError, setHasError] = useState(false);
+  const adsSafe = useAdsSafe();
 
-  if (Platform.OS === 'web' || hasError) return null;
+  if (Platform.OS === 'web' || !adsSafe || hasError) return null;
 
   return (
     <View style={styles.container}>

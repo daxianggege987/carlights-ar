@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  FlatList,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import { Category, Screen } from '../types';
 import { colors, spacing, fontSize, radius } from '../theme';
@@ -14,13 +14,25 @@ import { warningLights } from '../data/warningLights';
 import SearchBar from '../components/SearchBar';
 import CategoryCard from '../components/CategoryCard';
 import LightCard from '../components/LightCard';
+import { getFavoriteIds, getRecentIds } from '../storage/userLists';
 
 interface Props {
   navigate: (screen: Screen) => void;
 }
 
+const APP_VERSION = '1.0.3';
+
 export default function HomeScreen({ navigate }: Props) {
   const [search, setSearch] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      setFavoriteIds(await getFavoriteIds());
+      setRecentIds(await getRecentIds());
+    })();
+  }, []);
 
   const filteredLights = useMemo(() => {
     if (!search.trim()) return [];
@@ -114,6 +126,110 @@ export default function HomeScreen({ navigate }: Props) {
               </View>
             </View>
 
+            {/* Tips */}
+            <View style={styles.tipsCard}>
+              <Text style={styles.tipsTitle}>💡 نصائح سريعة</Text>
+              <Text style={styles.tipsBody}>
+                • راقب أضواء الخطر الحمراء قبل السرعة العالية.{'\n'}
+                • احفظ الأضواء المهمة في المفضلة للوصول السريع.{'\n'}
+                • استخدم البحث بالإنجليزية إذا لم تجد اسماً عربياً.
+              </Text>
+            </View>
+
+            {/* Tools */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>أدوات</Text>
+              <View style={styles.toolsRow}>
+                <TouchableOpacity
+                  style={styles.toolCard}
+                  onPress={() => navigate({ name: 'checklist' })}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.toolIcon}>✅</Text>
+                  <Text style={styles.toolTitle}>قائمة ما قبل القيادة</Text>
+                  <Text style={styles.toolSub}>فحص سريع قبل الانطلاق</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.toolCard}
+                  onPress={() => navigate({ name: 'quiz' })}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.toolIcon}>🧠</Text>
+                  <Text style={styles.toolTitle}>اختبار سريع</Text>
+                  <Text style={styles.toolSub}>تعرّف على الرموز</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.severityBrowseTitle}>تصفح حسب الخطورة</Text>
+              <View style={styles.severityBrowseRow}>
+                <TouchableOpacity
+                  style={[styles.sevBtn, styles.sevBtnRed]}
+                  onPress={() =>
+                    navigate({ name: 'browse', severity: 'red' })
+                  }
+                >
+                  <Text style={styles.sevBtnText}>🔴 خطر</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.sevBtn, styles.sevBtnYellow]}
+                  onPress={() =>
+                    navigate({ name: 'browse', severity: 'yellow' })
+                  }
+                >
+                  <Text style={styles.sevBtnText}>🟡 تحذير</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.sevBtn, styles.sevBtnGreen]}
+                  onPress={() =>
+                    navigate({ name: 'browse', severity: 'green' })
+                  }
+                >
+                  <Text style={styles.sevBtnText}>🟢 معلومات</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Favorites */}
+            {favoriteIds.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  ⭐ المفضلة ({favoriteIds.length})
+                </Text>
+                {favoriteIds
+                  .map((id) => warningLights.find((l) => l.id === id))
+                  .filter(Boolean)
+                  .map((light) => (
+                    <LightCard
+                      key={light!.id}
+                      light={light!}
+                      onPress={() =>
+                        navigate({ name: 'detail', lightId: light!.id })
+                      }
+                    />
+                  ))}
+              </View>
+            )}
+
+            {/* Recent */}
+            {recentIds.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  🕐 آخر المشاهدة
+                </Text>
+                {recentIds
+                  .map((id) => warningLights.find((l) => l.id === id))
+                  .filter(Boolean)
+                  .map((light) => (
+                    <LightCard
+                      key={light!.id}
+                      light={light!}
+                      onPress={() =>
+                        navigate({ name: 'detail', lightId: light!.id })
+                      }
+                    />
+                  ))}
+              </View>
+            )}
+
             {/* Categories Grid */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>تصفح حسب الفئة</Text>
@@ -150,7 +266,11 @@ export default function HomeScreen({ navigate }: Props) {
           <Text style={styles.footerText}>
             أضواء السيارة — دليلك لفهم لوحة القيادة
           </Text>
-          <Text style={styles.footerVersion}>الإصدار 1.0.0</Text>
+          <Text style={styles.footerVersion}>الإصدار {APP_VERSION}</Text>
+          <Text style={styles.disclaimer}>
+            المعلومات للإرشاد فقط ولا تغني عن تشخيص الميكانيكي. في الحالات
+            الخطيرة توقف واطلب المساعدة.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -269,5 +389,98 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textMuted,
     marginTop: spacing.xs,
+  },
+  disclaimer: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing.md,
+    lineHeight: 20,
+    paddingHorizontal: spacing.sm,
+  },
+  tipsCard: {
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  tipsTitle: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    textAlign: 'right',
+    marginBottom: spacing.sm,
+  },
+  tipsBody: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    lineHeight: 22,
+  },
+  toolsRow: {
+    flexDirection: 'row-reverse',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  toolCard: {
+    flex: 1,
+    backgroundColor: colors.bgCard,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    alignItems: 'center',
+  },
+  toolIcon: { fontSize: 32, marginBottom: spacing.sm },
+  toolTitle: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+  toolSub: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
+  severityBrowseTitle: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginBottom: spacing.sm,
+  },
+  severityBrowseRow: {
+    flexDirection: 'row-reverse',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  sevBtn: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  sevBtnRed: {
+    borderColor: colors.severityRed,
+    backgroundColor: colors.severityRedBg,
+  },
+  sevBtnYellow: {
+    borderColor: colors.severityYellow,
+    backgroundColor: colors.severityYellowBg,
+  },
+  sevBtnGreen: {
+    borderColor: colors.severityGreen,
+    backgroundColor: colors.severityGreenBg,
+  },
+  sevBtnText: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.textPrimary,
   },
 });

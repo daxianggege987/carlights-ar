@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { categories } from '../data/categories';
 import SeverityBadge from '../components/SeverityBadge';
 import BannerAdView from '../ads/BannerAdView';
 import { adManager } from '../ads/AdManager';
+import { recordRecent, toggleFavorite, isFavorite } from '../storage/userLists';
 
 interface Props {
   lightId: string;
@@ -23,6 +24,13 @@ interface Props {
 
 export default function DetailScreen({ lightId, navigate, goBack }: Props) {
   const light = warningLights.find((l) => l.id === lightId);
+  const [fav, setFav] = useState(false);
+
+  useEffect(() => {
+    if (!light) return;
+    recordRecent(light.id);
+    isFavorite(light.id).then(setFav);
+  }, [lightId, light?.id]);
 
   const handleGoBack = () => {
     if (light) {
@@ -72,7 +80,16 @@ export default function DetailScreen({ lightId, navigate, goBack }: Props) {
         <Text style={styles.headerTitle} numberOfLines={1}>
           {light.nameAr}
         </Text>
-        <View style={{ width: 60 }} />
+        <TouchableOpacity
+          onPress={async () => {
+            const v = await toggleFavorite(light.id);
+            setFav(v);
+          }}
+          style={styles.favBtn}
+          accessibilityLabel={fav ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+        >
+          <Text style={styles.favIcon}>{fav ? '★' : '☆'}</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -242,6 +259,16 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: 'center',
     marginHorizontal: spacing.sm,
+  },
+  favBtn: {
+    padding: spacing.sm,
+    minWidth: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  favIcon: {
+    fontSize: 26,
+    color: colors.primary,
   },
   scrollView: {
     flex: 1,
